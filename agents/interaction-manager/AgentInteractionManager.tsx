@@ -6,8 +6,7 @@ import { LocationData } from '@/hooks/useLocation';
 import ChatInterface from '../chat-interfaces/ChatInterface';
 import VoiceInterface from '../voice-handlers/VoiceInterface';
 import AgentInfoPanel from '../ar-features/AgentInfoPanel';
-import MCPIntegration from '../mcp-integrations/MCPIntegration'; 
-import QRPaymentModal from '../../components/payment/QRPaymentModal';
+import MCPIntegration from '../mcp-integrations/MCPIntegration';
 
 interface AgentInteractionManagerProps {
   agent: DeployedObject;
@@ -24,9 +23,6 @@ export default function AgentInteractionManager({
 }: AgentInteractionManagerProps) {
   const [activeInterface, setActiveInterface] = useState<'menu' | 'chat' | 'voice' | 'info' | 'mcp'>('menu');
   const [isFavorite, setIsFavorite] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentRequired, setPaymentRequired] = useState(false);
-  const [paymentCompleted, setPaymentCompleted] = useState(false);
 
   // Calculate distance to agent
   const calculateDistance = () => {
@@ -69,33 +65,10 @@ export default function AgentInteractionManager({
   const distance = calculateDistance();
 
   const handleInteraction = (type: 'chat' | 'voice' | 'info' | 'mcp') => {
-    // Check if payment is required and not yet completed
-    if (agent.interaction_fee_usdfc && agent.interaction_fee_usdfc > 0 && !paymentCompleted) {
-      setPaymentRequired(true);
-      setShowPaymentModal(true);
-      // Store the interaction type to continue after payment
-      setActiveInterface(type);
-      return;
-    }
-    
     console.log(`🤖 Starting ${type} interaction with agent:`, agent.name);
     setActiveInterface(type);
   };
   
-  // Handle payment completion
-  const handlePaymentComplete = (success: boolean) => {
-    setShowPaymentModal(false);
-    
-    if (success) {
-      setPaymentCompleted(true);
-      // Continue with the interaction that was attempted
-      console.log(`🤖 Payment successful, continuing with ${activeInterface} interaction`);
-    } else {
-      // Stay on the menu if payment failed
-      setActiveInterface('menu');
-    }
-  };
-
   const handleFavorite = () => {
     setIsFavorite(!isFavorite);
     // TODO: Save to favorites in database
@@ -276,16 +249,6 @@ export default function AgentInteractionManager({
           {renderActiveInterface()}
         </View>
       </View>
-      
-      {/* Payment Modal */}
-      {paymentRequired && (
-        <QRPaymentModal
-          visible={showPaymentModal}
-          agent={agent}
-          onClose={() => setShowPaymentModal(false)}
-          onPaymentComplete={handlePaymentComplete}
-        />
-      )}
     </Modal>
   );
 }

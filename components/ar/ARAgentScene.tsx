@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Platform, Dimensions } from 'react-native';
 import { DeployedObject } from '@/types/database';
 import { LocationData } from '@/hooks/useLocation';
-import { RangeDetectionService } from '@/services/RangeDetectionService'; 
+import { RangeDetectionService } from '@/services/RangeDetectionService';
 import Agent3DObject from './Agent3DObject';
 import { calculateAgentPositions, AgentDisplayData } from './AgentPositioning';
 import { X, Info, MapPin, Zap } from 'lucide-react-native';
-import QRPaymentModal from '@/components/payment/QRPPaymentModal';
+// Remove problematic import
 
 interface ARAgentSceneProps {
   agents: DeployedObject[];
@@ -22,7 +22,7 @@ export default function ARAgentScene({ agents, userLocation, onAgentSelect }: AR
   const [agentsInRange, setAgentsInRange] = useState<DeployedObject[]>([]);
   const [isInitialized, setIsInitialized] = useState(false); 
   const [showAgentModal, setShowAgentModal] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  // Remove state for payment modal
   const rangeService = RangeDetectionService.getInstance();
   
   // Calculate agent positions when agents or user location changes
@@ -63,26 +63,12 @@ export default function ARAgentScene({ agents, userLocation, onAgentSelect }: AR
     console.log('Agent clicked:', agent.name);
     setSelectedAgent(agent);
     
-    // Check if agent requires payment
-    if (agent.interaction_fee_usdfc && agent.interaction_fee_usdfc > 0) {
-      setShowPaymentModal(true);
-    } else {
-      setShowAgentModal(true);
-    }
+    // Simplified logic - always show agent modal
+    setShowAgentModal(true);
     
     // Call parent handler if provided
     if (onAgentSelect) {
       onAgentSelect(agent);
-    }
-  };
-  
-  // Handle payment completion
-  const handlePaymentComplete = (success: boolean) => {
-    setShowPaymentModal(false);
-    
-    if (success) {
-      // Show agent modal after successful payment
-      setShowAgentModal(true);
     }
   };
   
@@ -251,16 +237,6 @@ export default function ARAgentScene({ agents, userLocation, onAgentSelect }: AR
           </View>
         </View>
       </Modal>
-      
-      {/* Payment Modal */}
-      {selectedAgent && (
-        <QRPaymentModal
-          visible={showPaymentModal}
-          agent={selectedAgent}
-          onClose={() => setShowPaymentModal(false)}
-          onPaymentComplete={handlePaymentComplete}
-        />
-      )}
     </View>
   );
 }
